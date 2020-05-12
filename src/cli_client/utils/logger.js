@@ -54,7 +54,7 @@ const outbound = (progress) => {
     { 'Passed assertions': totalPassedAssertionsCount },
     { 'Faile assertions': totalAssertionsCount - totalPassedAssertionsCount },
     { 'Total requests': totalRequestsCount },
-    { 'Total test cases': totalRequestsCount },
+    { 'Total test cases': progress.test_cases.length },
     { 'Passed percentage': `${(100 * (totalPassedAssertionsCount / totalAssertionsCount)).toFixed(2)}%` },
     { 'Started time': progress.runtimeInformation.startedTime },
     { 'Completed time': progress.runtimeInformation.completedTime },
