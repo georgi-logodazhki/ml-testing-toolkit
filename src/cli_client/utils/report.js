@@ -28,34 +28,36 @@ const writeFileAsync = promisify(fs.writeFile)
 
 const outbound = async (data, config) => {
   let testCaseReport
+  let reportFilename
   switch (config.reportFormat) {
     case 'json':
       testCaseReport = JSON.stringify(data, null, 2)
-      await writeFileAsync(`${data.name}-${data.runtimeInformation.completedTimeISO}.${config.reportFormat}`, testCaseReport)
+      reportFilename = config.reportFilename || `${data.name}-${data.runtimeInformation.completedTimeISO}.${config.reportFormat}`
       break
     case 'html':
     case 'printhtml': {
       const response = await axios.post(`http://localhost:5050/api/reports/testcase/${config.reportFormat}`, data, { headers: { 'Content-Type': 'application/json' } })
-      let downloadFilename
+      testCaseReport = response.data
       if (config.reportFilename) {
-        downloadFilename = config.reportFilename
+        reportFilename = config.reportFilename
       } else {
         const disposition = response.headers['content-disposition']
         if (disposition && disposition.indexOf('attachment') !== -1) {
           var filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/
           var matches = filenameRegex.exec(disposition)
           if (matches != null && matches[1]) {
-            downloadFilename = matches[1].replace(/['"]/g, '')
+            reportFilename = matches[1].replace(/['"]/g, '')
           }
         }
       }
-      await writeFileAsync(downloadFilename, response.data)
-      console.log(`${downloadFilename} was generated`)
       break
     }
     default:
       console.log('reportFormat is not supported')
+      return
   }
+  await writeFileAsync(reportFilename, testCaseReport)
+  console.log(`${reportFilename} was generated`)
 }
 
 module.exports = {
